@@ -1,35 +1,22 @@
 package com.composeperf.tracer
 
-import androidx.annotation.VisibleForTesting
-
 /**
- * Immutable snapshot of recomposition data captured at a point in time.
+ * An immutable snapshot of recomposition counts at a point in time.
  */
 data class RecompositionSnapshot(
-    val composableName: String,
-    val recompositionCount: Int,
-    val capturedAtMs: Long = System.currentTimeMillis()
+    val timestampMs: Long = System.currentTimeMillis(),
+    val counts: Map<String, Int> = emptyMap()
 ) {
-    val isAboveThreshold: Boolean
-        get() = recompositionCount > 0
-}
+    val totalRecompositions: Int get() = counts.values.sum()
+    val composableCount: Int get() = counts.size
 
-/**
- * Aggregated report built from a collection of [RecompositionSnapshot] entries.
- */
-data class RecompositionReport(
-    val snapshots: List<RecompositionSnapshot>,
-    val generatedAtMs: Long = System.currentTimeMillis()
-) {
-    val totalRecompositions: Int
-        get() = snapshots.sumOf { it.recompositionCount }
+    fun topN(n: Int): List<Pair<String, Int>> =
+        counts.entries
+            .sortedByDescending { it.value }
+            .take(n)
+            .map { it.key to it.value }
 
-    val hotspots: List<RecompositionSnapshot>
-        get() = snapshots.sortedByDescending { it.recompositionCount }
-
-    val isEmpty: Boolean
-        get() = snapshots.isEmpty()
-
-    @VisibleForTesting
-    fun topN(n: Int): List<RecompositionSnapshot> = hotspots.take(n)
+    companion object {
+        val EMPTY = RecompositionSnapshot(counts = emptyMap())
+    }
 }
