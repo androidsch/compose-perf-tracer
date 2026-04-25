@@ -63,4 +63,20 @@ class RecompositionRateAnalyzerTest {
         val result = analyzer.analyze(nowMs = 1000L)
         assertEquals(10.0, result[0].recompositionsPerSecond, 0.01)
     }
+
+    @Test
+    fun `analyze returns results for multiple distinct composables`() {
+        analyzer.record("ComponentA", 4, nowMs = 800L)
+        analyzer.record("ComponentB", 7, nowMs = 800L)
+        analyzer.record("ComponentC", 1, nowMs = 800L)
+        val result = analyzer.analyze(nowMs = 1000L)
+        assertEquals(3, result.size)
+        val names = result.map { it.composableName }
+        assertTrue(names.contains("ComponentA"))
+        assertTrue(names.contains("ComponentB"))
+        assertTrue(names.contains("ComponentC"))
+        // Verify descending order by rps
+        assertTrue(result[0].recompositionsPerSecond >= result[1].recompositionsPerSecond)
+        assertTrue(result[1].recompositionsPerSecond >= result[2].recompositionsPerSecond)
+    }
 }
