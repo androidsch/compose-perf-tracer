@@ -57,6 +57,12 @@ class RecompositionGroupAnalyzerTest {
     }
 
     @Test
+    fun `summarize returns empty map for empty input`() {
+        val result = analyzer.summarize(emptyList())
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
     fun `topGroups returns sorted groups by count`() {
         val snapshots = listOf(
             RecompositionSnapshot("A.X", 1),
@@ -77,6 +83,16 @@ class RecompositionGroupAnalyzerTest {
         val snapshots = (1..10).map { RecompositionSnapshot("Group$it.Item", it) }
         val top = analyzer.topGroups(snapshots, topN = 3)
         assertEquals(3, top.size)
+    }
+
+    @Test
+    fun `topGroups returns all groups when topN exceeds group count`() {
+        val snapshots = listOf(
+            RecompositionSnapshot("A.X", 1),
+            RecompositionSnapshot("B.X", 2)
+        )
+        val top = analyzer.topGroups(snapshots, topN = 10)
+        assertEquals(2, top.size)
     }
 
     @Test
