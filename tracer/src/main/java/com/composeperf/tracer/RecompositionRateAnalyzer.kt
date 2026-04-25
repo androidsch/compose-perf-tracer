@@ -26,6 +26,7 @@ class RecompositionRateAnalyzer(
     private val history = mutableListOf<TimestampedCount>()
 
     fun record(composableName: String, count: Int, nowMs: Long = System.currentTimeMillis()) {
+        require(count >= 0) { "count must be non-negative, got $count" }
         history.removeAll { nowMs - it.recordedAtMs > windowMs }
         history.add(TimestampedCount(composableName, count, nowMs))
     }
@@ -46,6 +47,15 @@ class RecompositionRateAnalyzer(
             }
             .sortedByDescending { it.recompositionsPerSecond }
     }
+
+    /**
+     * Returns the [RateEntry] for a specific composable, or null if it has no
+     * recorded events within the current window.
+     */
+    fun analyzeFor(
+        composableName: String,
+        nowMs: Long = System.currentTimeMillis()
+    ): RateEntry? = analyze(nowMs).find { it.composableName == composableName }
 
     fun clear() {
         history.clear()
