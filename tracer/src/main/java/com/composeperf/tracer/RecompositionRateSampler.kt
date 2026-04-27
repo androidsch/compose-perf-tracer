@@ -14,6 +14,9 @@ class RecompositionRateSampler(
     /**
      * Take a single sample. Call this repeatedly at a consistent interval
      * (e.g. every 200ms) to build up rate data.
+     *
+     * Only composables whose recomposition count has increased since the last
+     * sample are forwarded to the analyzer, avoiding noise from idle components.
      */
     fun sample(nowMs: Long = System.currentTimeMillis()) {
         val snapshot = registry.snapshot()
@@ -26,6 +29,12 @@ class RecompositionRateSampler(
             previousCounts[name] = currentCount
         }
     }
+
+    /**
+     * Returns the names of all composables that have been observed in at least
+     * one sample since the last [reset].
+     */
+    fun trackedComposables(): Set<String> = previousCounts.keys.toSet()
 
     fun reset() {
         previousCounts.clear()
