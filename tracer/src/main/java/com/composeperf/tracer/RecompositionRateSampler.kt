@@ -36,6 +36,13 @@ class RecompositionRateSampler(
      */
     fun trackedComposables(): Set<String> = previousCounts.keys.toSet()
 
+    /**
+     * Returns the total number of recompositions accumulated across all tracked
+     * composables since the last [reset]. Useful for a quick health-check or
+     * summary log without querying the analyzer directly.
+     */
+    fun totalRecompositions(): Int = previousCounts.values.sum()
+
     fun reset() {
         previousCounts.clear()
         analyzer.clear()
